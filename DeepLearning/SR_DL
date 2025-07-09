@@ -1,0 +1,83 @@
+import sys
+import os
+import cv2
+import numpy as np
+import torch
+import matplotlib.pyplot as plt
+
+# SwinIR path
+sys.path.append('/content/drive/MyDrive/PS_12/SwinIR')
+
+from models.network_swinir import SwinIR
+
+# Step 1: Load grayscale LR images
+img1_path = '/content/drive/MyDrive/PS_12/train_lr/PAN_AOI_2_Vegas_img1000_0.tif'
+img2_path = '/content/drive/MyDrive/PS_12/train_lr/PAN_AOI_2_Vegas_img1000_1.tif'
+img1 = cv2.imread(img1_path, cv2.IMREAD_GRAYSCALE)
+img2 = cv2.imread(img2_path, cv2.IMREAD_GRAYSCALE)
+
+# Resize second image
+h, w = img1.shape
+img2 = cv2.resize(img2, (w, h))
+
+# Step 2: ECC alignment
+warp_matrix = np.eye(2, 3, dtype=np.float32)
+criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 5000, 1e-6)
+(cc, warp_matrix) = cv2.findTransformECC(img1, img2, warp_matrix, cv2.MOTION_AFFINE, criteria)
+aligned_img2 = cv2.warpAffine(img2, warp_matrix, (w, h), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
+
+# Step 3: Fuse the aligned images (average)
+fused = ((img1.astype(np.float32) + aligned_img2.astype(np.float32)) / 2).astype(np.uint8)
+
+# Step 4: Fake RGB (stack grayscale into 3 channels)
+fused_rgb = np.stack([fused] * 3, axis=-1)  # Shape: (H, W, 3)
+fused_tensor = torch.from_numpy(fused_rgb).permute(2, 0, 1).unsqueeze(0).float() / 255.0  # [1, 3, H, W]
+
+# Step 5: Load pretrained SwinIR x4 RGB model
+model = SwinIR(
+    upscale=4,
+    in_chans=3,
+    img_size=64,
+    window_size=8,
+    img_range=1.0,
+    depths=[6, 6, 6, 6, 6, 6],
+    embed_dim=180,
+    num_heads=[6, 6, 6, 6, 6, 6],
+    mlp_ratio=2,
+    upsampler='pixelshuffle',
+    resi_connection='1conv'
+)
+
+# Load checkpoint and clean attn_mask
+ckpt_path = '/content/drive/MyDrive/PS_12/model_zoo/001_classicalSR_DIV2K_s48w8_SwinIR-M_x4.pth'
+state_dict = torch.load(ckpt_path)
+if 'params' in state_dict:
+    state_dict = state_dict['params']
+
+# Filter out attention masks
+filtered_state_dict = {k: v for k, v in state_dict.items() if 'attn_mask' not in k}
+
+# Load weights
+model.load_state_dict(filtered_state_dict, strict=False)
+model.eval()
+
+
+# Step 6: Super-resolve
+with torch.no_grad():
+    output = model(fused_tensor)
+
+# Step 7: Convert SR output to grayscale
+sr_image = output.squeeze().clamp(0, 1).cpu().numpy()  # [3, H, W]
+sr_gray = (0.2989 * sr_image[0] + 0.587 * sr_image[1] + 0.114 * sr_image[2])  # Convert to grayscale
+sr_gray = (sr_gray * 255).astype(np.uint8)
+
+# Step 8: Display and save
+plt.figure(figsize=(6, 6))
+plt.imshow(sr_gray, cmap='gray')
+plt.title("SR_DL(Grayscale)")
+plt.axis('off')
+plt.show()
+
+save_path = '/content/drive/MyDrive/PS_12/SR_SwinIR_x4.png'
+cv2.imwrite(save_path, sr_gray)
+print(f"✅ Super-resolved image saved to: {save_path}")
