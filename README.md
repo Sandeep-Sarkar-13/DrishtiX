@@ -63,10 +63,12 @@ After SR generation, the image quality is evaluated using:
 
 ## 🌐 Streamlit Web App Features
 
-- Upload 2 low-res satellite images
-- Automatic image alignment and dual SR generation
-- Display of SR outputs and all metric scores
-- Option to download the final high-resolution image
+- Upload 2 low-res satellite images  
+- Automatic image alignment and dual SR generation  
+- Display of SR outputs and all metric scores  
+- Option to download the final high-resolution image  
+- 🔗 [Live Demo](https://drishtix.streamlit.app/)
+
 
 ---
 
