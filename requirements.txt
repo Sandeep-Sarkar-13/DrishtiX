@@ -1,0 +1,11 @@
+streamlit
+opencv-python-headless
+numpy
+matplotlib
+Pillow
+torch
+torchvision
+scipy
+scikit-image
+requests
+pathlib2
