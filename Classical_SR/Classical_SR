@@ -1,0 +1,42 @@
+#Classical Approach (Iterative Back-Projection)
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter
+
+def degrade(image, scale=4):
+    image = image.astype(np.float32)
+    blurred = gaussian_filter(image, sigma=1)
+    downsampled = blurred[::scale, ::scale]
+    return downsampled
+
+def upsample(image, target_shape):
+    return cv2.resize(image, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_CUBIC)
+
+def back_projection(sr, lr, scale=4, iterations=10):
+    sr = sr.astype(np.float32)
+    lr = lr.astype(np.float32)
+
+    for i in range(iterations):
+        simulated_lr = degrade(sr, scale)
+        error_lr = lr - simulated_lr
+        error_sr = upsample(error_lr, sr.shape)
+        sr += error_sr
+        sr = np.clip(sr, 0, 255)
+
+    return sr.astype(np.uint8)
+
+# Upsample both to HR shape
+upsampled_img1 = upsample(img1, (img1.shape[0]*4, img1.shape[1]*4))
+upsampled_img2 = upsample(aligned_img2, (img1.shape[0]*4, img1.shape[1]*4))
+
+# Apply Backprojection
+SR_classical_1 = back_projection(upsampled_img1.copy(), img1, scale=4)
+SR_classical_2 = back_projection(upsampled_img2.copy(), aligned_img2, scale=4)
+
+# Average both classical results
+SR_classical = ((SR_classical_1.astype(np.float32) + SR_classical_2.astype(np.float32)) / 2).astype(np.uint8)
+
+cv2.imwrite('/content/drive/MyDrive/PS_12/SR_classical_4.png', SR_classical)
+plt.imshow(SR_classical, cmap='gray'); plt.title("SR_classical"); plt.axis('off'); plt.show()
+
