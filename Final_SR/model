@@ -1,0 +1,30 @@
+#Final SR Fusion Model without training (better)
+
+import torch
+import torch.nn as nn
+import torchvision.transforms as T
+from PIL import Image
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Step 1: Load the SR images
+SR_classical_path = '/content/drive/MyDrive/PS_12/SR_classical_4.png'
+SR_DL_path = '/content/drive/MyDrive/PS_12/SR_SwinIR_x4.png'
+
+# Load grayscale SR images using OpenCV
+sr_classical = cv2.imread(SR_classical_path, cv2.IMREAD_GRAYSCALE)
+sr_dl = cv2.imread(SR_DL_path, cv2.IMREAD_GRAYSCALE)
+
+sr_dl = cv2.resize(sr_dl, (sr_classical.shape[1], sr_classical.shape[0]))
+
+# Weighted fusion
+fused = cv2.addWeighted(sr_classical, 0.5, sr_dl, 0.5, 0)
+
+# Show and save
+plt.imshow(fused, cmap='gray')
+plt.title("Final SR Image (Grayscale)")
+plt.axis('off')
+plt.show()
+
+cv2.imwrite('/content/drive/MyDrive/PS_12/edsr_SR_final_fused_4.png', fused)
