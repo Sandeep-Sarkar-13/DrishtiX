@@ -14,7 +14,7 @@
 
 ## 🚀 Project Overview
 
-Due to hardware and bandwidth limitations, satellites often capture multiple slightly-shifted low-resolution (LR) images instead of a single high-resolution (HR) one. Our solution leverages two such LR inputs to reconstruct a high-quality SR image with minimal error and high perceptual fidelity — even when ground-truth HR images are unavailable.
+Due to hardware and bandwidth limitations, satellites often capture multiple slightly-shifted low-resolution (LR) images instead of a single high-resolution (HR) one. Our solution leverages two such LR inputs to reconstruct a high-quality SR image with minimal error and high perceptual fidelity — even when ground-truth HR images are unavailable .
 
 ---
 
