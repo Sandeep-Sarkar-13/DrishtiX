@@ -84,7 +84,8 @@ After SR generation, the image quality is evaluated using:
 ## 🖥️ Running Locally
 
 ```bash
-git clone https://github.com/<your-username>/DrishtiX.git
+git clone https://github.com/Sandeep-Sarkar-13/DrishtiX.git
 cd DrishtiX
 pip install -r requirements.txt
 streamlit run app.py
+```
