@@ -74,7 +74,7 @@ After SR generation, the image quality is evaluated using:
 
 ## ⚙️ Tech Stack
 
-- **Frontend**: Streamlit  
+- **Frontend**: Streamlit,HTML,CSS 
 - **Backend Models**: PyTorch (SwinIR), OpenCV, SciPy  
 - **Metrics**: scikit-image, sewar, OpenCV quality module  
 - **Deployment Ready**: Easy to run locally or host on platforms like Hugging Face or Streamlit Cloud
