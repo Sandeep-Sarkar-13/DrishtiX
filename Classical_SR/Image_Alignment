@@ -1,0 +1,50 @@
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+from PIL import Image
+
+# Load LR images
+img1 = cv2.imread('/content/drive/MyDrive/PS_12/train_lr/PAN_AOI_2_Vegas_img1000_0.tif', cv2.IMREAD_GRAYSCALE)  # Reference
+img2 = cv2.imread('/content/drive/MyDrive/PS_12/train_lr/PAN_AOI_2_Vegas_img1000_1.tif', cv2.IMREAD_GRAYSCALE)  # To be aligned
+
+# Display both images
+plt.subplot(1, 2, 1)
+plt.title('LR Image 1')
+plt.imshow(img1, cmap='gray')
+
+plt.subplot(1, 2, 2)
+plt.title('LR Image 2')
+plt.imshow(img2, cmap='gray')
+
+plt.show()
+
+# Resize both to the same shape if required
+height, width = img1.shape
+img2 = cv2.resize(img2, (width, height))
+
+#Sub-Pixel Image Registration Using ECC
+
+warp_matrix = np.eye(2, 3, dtype=np.float32)
+
+# termination criteria: max_iterations and epsilon
+criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 5000, 1e-6)
+
+# Perform ECC alignment
+(cc, warp_matrix) = cv2.findTransformECC(img1, img2, warp_matrix, cv2.MOTION_AFFINE, criteria)
+
+print("Estimated warp matrix:\n", warp_matrix)
+
+# Warp img2 to align with img1
+aligned_img2 = cv2.warpAffine(img2, warp_matrix, (img1.shape[1], img1.shape[0]), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
+
+# Display aligned images
+plt.subplot(1, 2, 1)
+plt.title('Original LR Image 1')
+plt.imshow(img1, cmap='gray')
+
+plt.subplot(1, 2, 2)
+plt.title('Aligned LR Image 2')
+plt.imshow(aligned_img2, cmap='gray')
+
+plt.show()
+
