@@ -1,0 +1,53 @@
+import cv2
+from PIL import Image
+import numpy as np
+from skimage.color import rgb2gray
+from skimage.util import img_as_float
+from niqe_main import niqe
+import matplotlib.pyplot as plt
+
+img_path ='/content/drive/MyDrive/PS_12/SR_final_fused_4.png'
+img = Image.open(img_path).convert('RGB')
+
+# Optional: Resize only if needed
+if img.size != (256, 256):
+    img = img.resize((256, 256))
+
+# Convert to grayscale float image
+gray = rgb2gray(np.asarray(img).astype(np.float32) / 255.0)
+
+# Compute NIQE score
+score = niqe(gray)
+print(f"NIQE Score: {score:.2f}")
+
+# Optional: Display
+plt.imshow(gray, cmap='gray')
+plt.title(f'NIQE Score: {score:.2f}')
+plt.axis('off')
+
+img = cv2.imread("/content/drive/MyDrive/PS_12/SR_final_fused.png")
+
+# Compute BRISQUE score
+score, _, _, _ = cv2.quality.QualityBRISQUE_compute(
+    img,
+    "/content/drive/MyDrive/PS_12/brisque_models/brisque_model_live.yml",
+    "/content/drive/MyDrive/PS_12/brisque_models/brisque_range_live.yml"
+)
+
+print(f"BRISQUE Score: {score:.2f}")
+
+img_path ='/content/drive/MyDrive/PS_12/SR_final_fused_4.png'
+img = Image.open(img_path).convert('RGB')
+
+if img.size != (256, 256):
+    img = img.resize((256, 256))
+
+gray = rgb2gray(np.asarray(img).astype(np.float32) / 255.0)
+
+# Compute NIQE score
+score = niqe(gray)
+print(f"NIQE Score: {score:.2f}")
+
+plt.imshow(gray, cmap='gray')
+plt.title(f'NIQE Score: {score:.2f}')
+plt.axis('off')
